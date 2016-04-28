@@ -1,7 +1,7 @@
 # ImageZoom
 
 [![](https://jitpack.io/v/oliveiradev/image-zoom.svg)](https://jitpack.io/#oliveiradev/image-zoom)
-[! [AndroidArsenal](https://img.shields.io/badge/Android%20Arsenal-ImageZoom-green.svg?style=true)](https://android-arsenal.com/details/1/3502)
+[![AndroidArsenal](https://img.shields.io/badge/Android%20Arsenal-ImageZoom-green.svg?style=true)](https://android-arsenal.com/details/1/3502)
 
 
 A simple lib for zoom images on event click 
