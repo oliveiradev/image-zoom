@@ -14,17 +14,17 @@ A simple lib for zoom images on event click
 
 Is simple, use this component:
 
-```
- <com.github.oliveiradev.image_zoom.lib.widget.ImageZoom
-            android:layout_width="width_dimensions"
-            android:layout_height="height_dimensions"
-            android:src="your_image" />
+```xml
+<com.github.oliveiradev.image_zoom.lib.widget.ImageZoom
+        android:layout_width="width_dimensions"
+        android:layout_height="height_dimensions"
+        android:src="your_image" />
 ```
 
 #Install 
 
 Add jitpack repositorie in your __build.gradle__ root level
-```
+```groovy
 allprojects {
 		repositories {
 			...
@@ -34,9 +34,9 @@ allprojects {
 ```
 and , add this dependencie
 
-```
+```groovy
 dependencies {
-	        compile 'com.github.oliveiradev:image-zoom:0.1.0'
+	compile 'com.github.oliveiradev:image-zoom:0.1.0'
 }
 ```
 
