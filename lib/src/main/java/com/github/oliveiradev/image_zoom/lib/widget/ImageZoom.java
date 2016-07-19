@@ -7,6 +7,8 @@ import android.graphics.Canvas;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
+import android.util.Log;
+import android.view.ContextThemeWrapper;
 import android.widget.ImageButton;
 
 import com.github.oliveiradev.image_zoom.lib.animation.ZoomAnimation;
@@ -76,8 +78,15 @@ public class ImageZoom extends ImageButton {
 
     @Override
     public boolean performClick() {
-        Activity activity = (Activity) context;
-        ZoomAnimation.zoom(this,activity);
+        if (context instanceof ContextThemeWrapper)
+            performZoom(((ContextThemeWrapper)context).getBaseContext());
+        else
+            performZoom(context);
         return super.performClick();
+    }
+
+
+    private void performZoom(Context context){
+        ZoomAnimation.zoom(this,(Activity) context);
     }
 }
