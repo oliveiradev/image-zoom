@@ -78,15 +78,16 @@ public class ImageZoom extends ImageButton {
 
     @Override
     public boolean performClick() {
-        if (context instanceof ContextThemeWrapper)
-            performZoom(((ContextThemeWrapper)context).getBaseContext());
+        if (((ContextThemeWrapper)this.context).getBaseContext() instanceof Activity)
+            performZoom(((ContextThemeWrapper)this.context).getBaseContext());
         else
             performZoom(context);
+
         return super.performClick();
     }
 
 
     private void performZoom(Context context){
-        ZoomAnimation.zoom(this,(Activity) context);
+        ZoomAnimation.zoom(this, (Activity) context);
     }
 }
