@@ -21,6 +21,19 @@ Is simple, use this component:
         android:src="your_image" />
 ```
 
+### Attributes
+
+#### landScapeZoom
+Starting version `0.3.0` is possible zooming on landscape orientation
+
+```xml
+<com.github.oliveiradev.image_zoom.lib.widget.ImageZoom
+        android:layout_width="width_dimensions"
+        android:layout_height="height_dimensions"
+        app:landScapeZoom="true"
+        android:src="your_image" />
+```
+
 #Install 
 
 Add jitpack repositorie in your __build.gradle__ root level
