@@ -5,15 +5,17 @@ import android.animation.AnimatorListenerAdapter;
 import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
 import android.app.Activity;
+import android.graphics.Bitmap;
+import android.graphics.Matrix;
 import android.graphics.Point;
 import android.graphics.Rect;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.support.v4.util.Pair;
 import android.support.v7.widget.ContentFrameLayout;
 import android.view.View;
-import android.view.ViewGroup;
 import android.view.animation.DecelerateInterpolator;
 import android.view.animation.RotateAnimation;
-import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 
@@ -25,6 +27,7 @@ public final class ZoomAnimation {
     private static final int ROTATION_DELAY = 500;
     private static Animator mCurrentAnimator;
     private static ImageView mImageZoom;
+    private static Bitmap mCurrentImage;
     private static boolean isLandScapeScreen;
     private static ContentFrameLayout container;
 
@@ -42,11 +45,8 @@ public final class ZoomAnimation {
         container = (ContentFrameLayout) activity.findViewById(android.R.id.content);
 
         mImageZoom = new ImageView(thumbView.getContext());
-        FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
-        mImageZoom.setLayoutParams(params);
-        mImageZoom.setImageDrawable(((ImageButton) thumbView).getDrawable());
-
-        container.addView(mImageZoom);
+        Drawable drawable = ((ImageButton) thumbView).getDrawable();
+        mCurrentImage = ((BitmapDrawable) drawable).getBitmap();
 
         final Rect startBounds = new Rect();
         final Rect finalBounds = new Rect();
@@ -93,7 +93,10 @@ public final class ZoomAnimation {
 
     private static void zoomIn(final ImageView imageZoom, Pair<Rect, Rect> bounds, float startScale) {
         if (isLandScapeScreen)
-            rotate(imageZoom, 90);
+            mCurrentImage = rotate(mCurrentImage, 90);
+
+        imageZoom.setImageBitmap(mCurrentImage);
+        container.addView(imageZoom);
 
         imageZoom.setVisibility(View.VISIBLE);
 
@@ -126,7 +129,9 @@ public final class ZoomAnimation {
 
     private static void zoomOut(final View thumb, final ImageView imageZoom, final Pair<Rect, Rect> bounds, final float scale) {
         if (isLandScapeScreen)
-            rotate(imageZoom, 0);
+            mCurrentImage = rotate(mCurrentImage, -90);
+
+        imageZoom.setImageBitmap(mCurrentImage);
 
         if (mCurrentAnimator != null) {
             mCurrentAnimator.cancel();
@@ -171,6 +176,14 @@ public final class ZoomAnimation {
         rotateAnim.setDuration(ROTATION_DELAY);
         rotateAnim.setFillAfter(true);
         imageView.startAnimation(rotateAnim);
+    }
+
+    private static Bitmap rotate(Bitmap bitmap, float degree) {
+        Matrix matrix = new Matrix();
+        matrix.setRotate(degree);
+
+
+        return Bitmap.createBitmap(bitmap, 0 , 0 , bitmap.getWidth(), bitmap.getHeight() , matrix, true);
     }
 
     private static void removeView(int index){
