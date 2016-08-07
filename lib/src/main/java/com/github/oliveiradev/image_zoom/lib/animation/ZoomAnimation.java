@@ -7,10 +7,12 @@ import android.animation.ObjectAnimator;
 import android.app.Activity;
 import android.graphics.Point;
 import android.graphics.Rect;
+import android.support.v4.util.Pair;
 import android.support.v7.widget.ContentFrameLayout;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.DecelerateInterpolator;
+import android.view.animation.RotateAnimation;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.ImageView;
@@ -20,25 +22,29 @@ import android.widget.ImageView;
  */
 public final class ZoomAnimation {
 
+    private static final int ROTATION_DELAY = 500;
     private static Animator mCurrentAnimator;
     private static ImageView mImageZoom;
+    private static boolean isLandScapeScreen;
+    private static ContentFrameLayout container;
 
-    public static void zoom(View view , Activity activity){
-        zoomImageFromThumb(view,activity);
+    public static void zoom(View view, Activity activity, boolean isLandScape) {
+        zoomImageFromThumb(view, activity, isLandScape);
     }
 
+    private static void zoomImageFromThumb(final View thumbView, final Activity activity, boolean isLandScape) {
+        isLandScapeScreen = isLandScape;
 
-    private static void zoomImageFromThumb(final View thumbView, Activity activity) {
         if (mCurrentAnimator != null) {
             mCurrentAnimator.cancel();
         }
 
-        ContentFrameLayout container = (ContentFrameLayout)activity.findViewById(android.R.id.content);
+        container = (ContentFrameLayout) activity.findViewById(android.R.id.content);
 
         mImageZoom = new ImageView(thumbView.getContext());
         FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
         mImageZoom.setLayoutParams(params);
-        mImageZoom.setImageDrawable(((ImageButton)thumbView).getDrawable());
+        mImageZoom.setImageDrawable(((ImageButton) thumbView).getDrawable());
 
         container.addView(mImageZoom);
 
@@ -51,7 +57,7 @@ public final class ZoomAnimation {
         startBounds.offset(-globalOffset.x, -globalOffset.y);
         finalBounds.offset(-globalOffset.x, -globalOffset.y);
 
-        float startScale;
+        final float startScale;
         if ((float) finalBounds.width() / finalBounds.height()
                 > (float) startBounds.width() / startBounds.height()) {
             startScale = (float) startBounds.height() / finalBounds.height();
@@ -68,20 +74,40 @@ public final class ZoomAnimation {
             startBounds.bottom += deltaHeight;
         }
 
+        final Pair<Rect, Rect> bounds = new Pair<>(startBounds, finalBounds);
         thumbView.setAlpha(0f);
-        mImageZoom.setVisibility(View.VISIBLE);
 
-        mImageZoom.setPivotX(0f);
-        mImageZoom.setPivotY(0f);
+        final float startScaleFinal = startScale;
+
+        zoomIn(mImageZoom, bounds, startScale);
+
+        mImageZoom.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                zoomOut(thumbView, (ImageView) v, bounds, startScaleFinal);
+            }
+        });
+
+    }
+
+
+    private static void zoomIn(final ImageView imageZoom, Pair<Rect, Rect> bounds, float startScale) {
+        if (isLandScapeScreen)
+            rotate(imageZoom, 90);
+
+        imageZoom.setVisibility(View.VISIBLE);
+
+        imageZoom.setPivotX(0f);
+        imageZoom.setPivotY(0f);
 
         AnimatorSet set = new AnimatorSet();
         set
-                .play(ObjectAnimator.ofFloat(mImageZoom, View.X, startBounds.left,
-                        finalBounds.left))
-                .with(ObjectAnimator.ofFloat(mImageZoom, View.Y, startBounds.top,
-                        finalBounds.top))
-                .with(ObjectAnimator.ofFloat(mImageZoom, View.SCALE_X, startScale, 1f))
-                .with(ObjectAnimator.ofFloat(mImageZoom, View.SCALE_Y, startScale, 1f));
+                .play(ObjectAnimator.ofFloat(imageZoom, View.X, bounds.first.left,
+                        bounds.second.left))
+                .with(ObjectAnimator.ofFloat(imageZoom, View.Y, bounds.first.top,
+                        bounds.second.top))
+                .with(ObjectAnimator.ofFloat(imageZoom, View.SCALE_X, startScale, 1f))
+                .with(ObjectAnimator.ofFloat(imageZoom, View.SCALE_Y, startScale, 1f));
         set.setInterpolator(new DecelerateInterpolator());
         set.addListener(new AnimatorListenerAdapter() {
             @Override
@@ -96,44 +122,58 @@ public final class ZoomAnimation {
         });
         set.start();
         mCurrentAnimator = set;
+    }
 
+    private static void zoomOut(final View thumb, final ImageView imageZoom, final Pair<Rect, Rect> bounds, final float scale) {
+        if (isLandScapeScreen)
+            rotate(imageZoom, 0);
 
-        final float startScaleFinal = startScale;
-        mImageZoom.setOnClickListener(new View.OnClickListener() {
+        if (mCurrentAnimator != null) {
+            mCurrentAnimator.cancel();
+        }
+
+        imageZoom.setBackgroundColor(0);
+        AnimatorSet set = new AnimatorSet();
+        set
+                .play(ObjectAnimator.ofFloat(imageZoom, View.X, bounds.first.left))
+                .with(ObjectAnimator.ofFloat(imageZoom, View.Y, bounds.first.top))
+                .with(ObjectAnimator
+                        .ofFloat(imageZoom, View.SCALE_X, scale))
+                .with(ObjectAnimator
+                        .ofFloat(imageZoom, View.SCALE_Y, scale));
+        set.setInterpolator(new DecelerateInterpolator());
+        set.addListener(new AnimatorListenerAdapter() {
             @Override
-            public void onClick(View view) {
-                if (mCurrentAnimator != null) {
-                    mCurrentAnimator.cancel();
-                }
+            public void onAnimationEnd(Animator animation) {
+                thumb.setAlpha(1f);
+                imageZoom.setVisibility(View.GONE);
+                mCurrentAnimator = null;
+                removeView(container.getChildCount() - 1);
+            }
 
-                mImageZoom.setBackgroundColor(0);
-                AnimatorSet set = new AnimatorSet();
-                set
-                        .play(ObjectAnimator.ofFloat(mImageZoom, View.X, startBounds.left))
-                        .with(ObjectAnimator.ofFloat(mImageZoom, View.Y, startBounds.top))
-                        .with(ObjectAnimator
-                                .ofFloat(mImageZoom, View.SCALE_X, startScaleFinal))
-                        .with(ObjectAnimator
-                                .ofFloat(mImageZoom, View.SCALE_Y, startScaleFinal));
-                set.setInterpolator(new DecelerateInterpolator());
-                set.addListener(new AnimatorListenerAdapter() {
-                    @Override
-                    public void onAnimationEnd(Animator animation) {
-                        thumbView.setAlpha(1f);
-                        mImageZoom.setVisibility(View.GONE);
-                        mCurrentAnimator = null;
-                    }
-
-                    @Override
-                    public void onAnimationCancel(Animator animation) {
-                        thumbView.setAlpha(1f);
-                        mImageZoom.setVisibility(View.GONE);
-                        mCurrentAnimator = null;
-                    }
-                });
-                set.start();
-                mCurrentAnimator = set;
+            @Override
+            public void onAnimationCancel(Animator animation) {
+                thumb.setAlpha(1f);
+                imageZoom.setVisibility(View.GONE);
+                mCurrentAnimator = null;
+                removeView(container.getChildCount() - 1);
             }
         });
+        set.start();
+        mCurrentAnimator = set;
+    }
+
+    private static void rotate(ImageView imageView, float degree) {
+        final RotateAnimation rotateAnim = new RotateAnimation(0.0f, degree,
+                RotateAnimation.RELATIVE_TO_SELF, 0.5f,
+                RotateAnimation.RELATIVE_TO_SELF, 0.5f);
+
+        rotateAnim.setDuration(ROTATION_DELAY);
+        rotateAnim.setFillAfter(true);
+        imageView.startAnimation(rotateAnim);
+    }
+
+    private static void removeView(int index){
+        container.removeViewAt(index);
     }
 }
