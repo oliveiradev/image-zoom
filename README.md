@@ -21,6 +21,12 @@ Is simple, use this component:
         android:src="your_image" />
 ```
 
+starting version `0.4.0` is possible use zoom effect in another image components , is simple:
+
+```java
+image.setOnClickListener(view -> ZoomAnimation.zoom(view, image.getDrawable(), activityContext, false));
+```
+
 ### Attributes
 
 #### landScapeZoom
@@ -49,7 +55,7 @@ and , add this dependencie
 
 ```groovy
 dependencies {
-	compile 'com.github.oliveiradev:image-zoom:0.1.0'
+	compile 'com.github.oliveiradev:image-zoom:[latest_version]'
 }
 ```
 
