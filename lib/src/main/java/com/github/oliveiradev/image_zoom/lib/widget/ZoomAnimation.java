@@ -1,4 +1,4 @@
-package com.github.oliveiradev.image_zoom.lib.animation;
+package com.github.oliveiradev.image_zoom.lib.widget;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
@@ -31,7 +31,7 @@ public final class ZoomAnimation {
     private static boolean isLandScapeScreen;
     private static ContentFrameLayout container;
 
-    public static void zoom(View view, Activity activity, boolean isLandScape) {
+    protected static void zoom(View view, Activity activity, boolean isLandScape) {
         zoomImageFromThumb(view, activity, isLandScape);
     }
 
@@ -90,6 +90,63 @@ public final class ZoomAnimation {
 
     }
 
+    public static void zoom(View view, Drawable drawable, Activity activity, boolean isLandScape) {
+        zoomImageFromThumb(view, drawable, activity, isLandScape);
+    }
+
+    private static void zoomImageFromThumb(final View thumbView,final Drawable drawable, final Activity activity, boolean isLandScape) {
+        isLandScapeScreen = isLandScape;
+
+        if (mCurrentAnimator != null) {
+            mCurrentAnimator.cancel();
+        }
+
+        container = (ContentFrameLayout) activity.findViewById(android.R.id.content);
+
+        mImageZoom = new ImageView(thumbView.getContext());
+        mCurrentImage = ((BitmapDrawable)drawable).getBitmap();
+
+        final Rect startBounds = new Rect();
+        final Rect finalBounds = new Rect();
+        final Point globalOffset = new Point();
+
+        thumbView.getGlobalVisibleRect(startBounds);
+        container.getGlobalVisibleRect(finalBounds, globalOffset);
+        startBounds.offset(-globalOffset.x, -globalOffset.y);
+        finalBounds.offset(-globalOffset.x, -globalOffset.y);
+
+        final float startScale;
+        if ((float) finalBounds.width() / finalBounds.height()
+                > (float) startBounds.width() / startBounds.height()) {
+            startScale = (float) startBounds.height() / finalBounds.height();
+            float startWidth = startScale * finalBounds.width();
+            float deltaWidth = (startWidth - startBounds.width()) / 2;
+            startBounds.left -= deltaWidth;
+            startBounds.right += deltaWidth;
+        } else {
+            // Extend start bounds vertically
+            startScale = (float) startBounds.width() / finalBounds.width();
+            float startHeight = startScale * finalBounds.height();
+            float deltaHeight = (startHeight - startBounds.height()) / 2;
+            startBounds.top -= deltaHeight;
+            startBounds.bottom += deltaHeight;
+        }
+
+        final Pair<Rect, Rect> bounds = new Pair<>(startBounds, finalBounds);
+        thumbView.setAlpha(0f);
+
+        final float startScaleFinal = startScale;
+
+        zoomIn(mImageZoom, bounds, startScale);
+
+        mImageZoom.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                zoomOut(thumbView, (ImageView) v, bounds, startScaleFinal);
+            }
+        });
+
+    }
 
     private static void zoomIn(final ImageView imageZoom, Pair<Rect, Rect> bounds, float startScale) {
         if (isLandScapeScreen)

@@ -2,23 +2,15 @@ package com.github.oliveiradev.image_zoom.lib.widget;
 
 import android.app.Activity;
 import android.content.Context;
-import android.content.pm.ActivityInfo;
 import android.content.res.TypedArray;
 import android.graphics.Canvas;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
-import android.os.Handler;
-import android.support.v7.widget.Toolbar;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.ContextThemeWrapper;
 import android.widget.ImageButton;
 
 import com.github.oliveiradev.image_zoom.lib.R;
-import com.github.oliveiradev.image_zoom.lib.animation.ZoomAnimation;
-
-import java.util.Timer;
-import java.util.TimerTask;
 
 /**
  * Created by felipe on 22/04/16.
